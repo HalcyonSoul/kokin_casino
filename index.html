@@ -48,12 +48,17 @@ function spin(){
   })
   .then(r=>r.json())
   .then(data=>{
-    document.getElementById("balance").innerText = data.balance;
-    document.getElementById("result").innerText =
-      data.win ? "🎉 WIN! "+data.roll : "❌ Lose "+data.roll;
+    const res = document.getElementById("result");
+    const bal = document.getElementById("balance");
+
+    bal.innerText = data.balance;
+    res.innerText = data.win ? "🎉 WIN " + data.roll : "❌ LOSE " + data.roll;
+
+    res.className = data.win ? "win" : "lose";
   })
 }
 </script>
+
 
 </body>
 </html>
