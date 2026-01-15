@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Telegram Casino</title>
+<title>🎰 Telegram Casino</title>
 <link rel="stylesheet" href="css/style.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -16,7 +16,7 @@
   </div>
 
   <div class="card game">
-    <img src="assets/slots.png">
+    <img src="assets/slots.png" alt="Slots">
     <div class="btn" onclick="spin()">SPIN</div>
     <div id="result"></div>
   </div>
@@ -24,41 +24,48 @@
 </div>
 
 <script>
+const BASE_URL = "https://backendkokin-production.up.railway.app";
 const tg = window.Telegram.WebApp;
 tg.expand();
 
 let user = tg.initDataUnsafe.user;
 let tg_id = user.id;
 
-fetch("http://127.0.0.1:8000/login", {
+function updateBalance(balance) {
+  document.getElementById("balance").innerText = balance;
+}
+
+function showResult(win, roll) {
+  const res = document.getElementById("result");
+  res.innerText = win ? "🎉 WIN " + roll : "❌ LOSE " + roll;
+  res.className = win ? "win" : "lose";
+}
+
+// Логин и получение баланса
+fetch(`${BASE_URL}/login`, {
   method: "POST",
   headers: {"Content-Type":"application/json"},
   body: JSON.stringify({tg_id: tg_id})
 })
 .then(r => r.json())
-.then(data => {
-  document.getElementById("balance").innerText = data.balance
-});
+.then(data => updateBalance(data.balance))
+.catch(err => console.error("Login error:", err));
 
-function spin(){
-  fetch("http://127.0.0.1:8000/spin", {
-    method:"POST",
+// Функция спина
+function spin() {
+  fetch(`${BASE_URL}/spin`, {
+    method: "POST",
     headers: {"Content-Type":"application/json"},
     body: JSON.stringify({tg_id: tg_id})
   })
-  .then(r=>r.json())
-  .then(data=>{
-    const res = document.getElementById("result");
-    const bal = document.getElementById("balance");
-
-    bal.innerText = data.balance;
-    res.innerText = data.win ? "🎉 WIN " + data.roll : "❌ LOSE " + data.roll;
-
-    res.className = data.win ? "win" : "lose";
+  .then(r => r.json())
+  .then(data => {
+    updateBalance(data.balance);
+    showResult(data.win, data.roll);
   })
+  .catch(err => console.error("Spin error:", err));
 }
 </script>
-
 
 </body>
 </html>
