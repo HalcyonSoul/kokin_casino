@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Telegram Casino</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+<div class="app">
+
+  <div class="card">
+    <h2>🎰 Telegram Casino</h2>
+    <div>Balance: <span id="balance">0</span></div>
+  </div>
+
+  <div class="card game">
+    <img src="assets/slots.png">
+    <div class="btn" onclick="spin()">SPIN</div>
+    <div id="result"></div>
+  </div>
+
+</div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+let user = tg.initDataUnsafe.user;
+let tg_id = user.id;
+
+fetch("http://127.0.0.1:8000/login", {
+  method: "POST",
+  headers: {"Content-Type":"application/json"},
+  body: JSON.stringify({tg_id: tg_id})
+})
+.then(r => r.json())
+.then(data => {
+  document.getElementById("balance").innerText = data.balance
+});
+
+function spin(){
+  fetch("http://127.0.0.1:8000/spin", {
+    method:"POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({tg_id: tg_id})
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    document.getElementById("balance").innerText = data.balance;
+    document.getElementById("result").innerText =
+      data.win ? "🎉 WIN! "+data.roll : "❌ Lose "+data.roll;
+  })
+}
+</script>
+
+</body>
+</html>

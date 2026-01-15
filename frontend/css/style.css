@@ -1,0 +1,39 @@
+body {
+  margin:0;
+  background:#0e1621;
+  color:white;
+  font-family: system-ui;
+}
+
+.app {
+  padding:12px;
+}
+
+.card {
+  background:#17212b;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:12px;
+  box-shadow: 0 0 20px rgba(0,0,0,.4);
+}
+
+.game img {
+  width:100%;
+  border-radius:12px;
+  margin-bottom:10px;
+}
+
+.btn {
+  background: linear-gradient(135deg,#2aabee,#229ed9);
+  text-align:center;
+  padding:14px;
+  border-radius:12px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+#result {
+  margin-top:10px;
+  text-align:center;
+  font-size:20px;
+}
