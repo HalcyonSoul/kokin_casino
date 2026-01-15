@@ -16,7 +16,7 @@
   </div>
 
   <div class="card game">
-    <img src="assets/slots.png" alt="Slots">
+    <img id="slot" src="assets/slots.png" alt="Slots" style="transition: transform 3s;">
     <div class="btn" onclick="spin()">SPIN</div>
     <div id="result"></div>
   </div>
@@ -62,6 +62,10 @@ function spin() {
   .then(data => {
     updateBalance(data.balance);
     showResult(data.win, data.roll);
+
+    let angle = data.angle;
+    const img = document.getElementById("slot-img");
+    img.style.transform = `rotate(${angle}deg)`;
   })
   .catch(err => console.error("Spin error:", err));
 }
