@@ -55,28 +55,46 @@ fetch(`${BASE_URL}/login`, {
 
 let currentAngle = 0;
 
-// Функция спина
+function getTargetAngle(roll) {
+  const indexes = SECTORS
+    .map((s, i) => s.value === roll ? i : -1)
+    .filter(i => i !== -1);
+
+  const index = indexes[Math.floor(Math.random() * indexes.length)];
+
+  const center = index * SECTOR_ANGLE + SECTOR_ANGLE / 2;
+
+  return 360 - center + 5;
+}
+
+// Функция спинф
 function spin() {
   fetch(`${BASE_URL}/spin`, {
     method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ tg_id: tg_id })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tg_id })
   })
   .then(r => r.json())
   .then(data => {
     updateBalance(data.balance);
     showResult(data.win, data.roll);
 
-    const img = document.querySelector(".wheel-wrapper");
+    const wheel = document.querySelector(".wheel-wrapper");
 
-    img.style.transition = "none";
-    img.style.transform = `rotate(${currentAngle}deg)`;
-    img.offsetHeight; // форс рефлоу
-    img.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
-    img.style.transform = `rotate(${currentAngle + data.angle}deg)`;
-    currentAngle += data.angle;
-  })
-  .catch(err => console.error("Spin error:", err));
+    const spins = 360 * (5 + Math.floor(Math.random() * 3)); // 5–7 оборотов
+    const target = getTargetAngle(data.roll);
+
+    const next = currentAngle + spins + target;
+
+    wheel.style.transition = "none";
+    wheel.style.transform = `rotate(${currentAngle}deg)`;
+    wheel.offsetHeight;
+
+    wheel.style.transition = "transform 4s cubic-bezier(.17,.67,.25,1)";
+    wheel.style.transform = `rotate(${next}deg)`;
+
+    currentAngle = next;
+  });
 }
 </script>
 
