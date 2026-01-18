@@ -67,8 +67,17 @@ function getTargetAngle(roll) {
   return 360 - center + 5;
 }
 
-// Функция спинф
+// Функция спина
+const BET_AMOUNT = 50; // ставка
+
 function spin() {
+  const balance = parseInt(document.getElementById("balance").innerText);
+
+  if (balance < BET_AMOUNT) {
+    alert("Недостаточно средств для спина!");
+    return; // прекращаем выполнение
+  }
+
   fetch(`${BASE_URL}/spin`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -96,6 +105,7 @@ function spin() {
     currentAngle = next;
   });
 }
+
 </script>
 
 </body>
