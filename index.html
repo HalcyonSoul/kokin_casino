@@ -16,7 +16,7 @@
   </div>
 
   <div class="card game">
-    <img id="slot" src="assets/slots.png" alt="Slots" style="transition: transform 3s;">
+    <img id="slot-img" src="assets/slots.png" alt="Slots" style="transition: transform 3s;">
     <div class="btn" onclick="spin()">SPIN</div>
     <div id="result"></div>
   </div>
@@ -56,16 +56,21 @@ function spin() {
   fetch(`${BASE_URL}/spin`, {
     method: "POST",
     headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({tg_id: tg_id})
+    body: JSON.stringify({ tg_id: tg_id })
   })
   .then(r => r.json())
   .then(data => {
     updateBalance(data.balance);
     showResult(data.win, data.roll);
 
-    let angle = data.angle;
     const img = document.getElementById("slot-img");
-    img.style.transform = `rotate(${angle}deg)`;
+
+    img.style.transition = "none";
+    img.style.transform = `rotate(${currentAngle}deg)`;
+    img.offsetHeight; // форс рефлоу
+    img.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
+    img.style.transform = `rotate(${currentAngle + data.angle}deg)`;
+    currentAngle += data.angle;
   })
   .catch(err => console.error("Spin error:", err));
 }

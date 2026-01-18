@@ -84,7 +84,8 @@ body {
   font-size:20px;
 }
 
-#slot {
-  transition: transform 1s ease-out;
+#slot-img {
+  transform-origin: center center;
+  will-change: transform;
 }
 
