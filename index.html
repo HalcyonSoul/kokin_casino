@@ -51,6 +51,8 @@ fetch(`${BASE_URL}/login`, {
 .then(data => updateBalance(data.balance))
 .catch(err => console.error("Login error:", err));
 
+let currentAngle = 0;
+
 // Функция спина
 function spin() {
   fetch(`${BASE_URL}/spin`, {
