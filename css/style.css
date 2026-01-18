@@ -84,8 +84,18 @@ body {
   font-size:20px;
 }
 
-#slot-img {
-  transform-origin: center center;
+.wheel-wrapper {
+  width: 300px;
+  height: 300px;
+  margin: 0 auto;
+  transition: transform 3s cubic-bezier(.17,.67,.25,1);
+  transform-origin: 50% 50%;
   will-change: transform;
 }
 
+#slot-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 12px;
+}

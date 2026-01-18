@@ -16,7 +16,9 @@
   </div>
 
   <div class="card game">
-    <img id="slot-img" src="assets/slots.png" alt="Slots" style="transition: transform 3s;">
+    <div class="wheel-wrapper">
+      <img id="slot-img" src="assets/slots.png" alt="Slots">
+    </div>
     <div class="btn" onclick="spin()">SPIN</div>
     <div id="result"></div>
   </div>
@@ -65,7 +67,7 @@ function spin() {
     updateBalance(data.balance);
     showResult(data.win, data.roll);
 
-    const img = document.getElementById("slot-img");
+    const img = document.querySelector(".wheel-wrapper");
 
     img.style.transition = "none";
     img.style.transform = `rotate(${currentAngle}deg)`;
