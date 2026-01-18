@@ -32,6 +32,8 @@ tg.expand();
 
 let user = tg.initDataUnsafe.user;
 let tg_id = user.id;
+let tg_name = user.first_name;
+let tg_username = user.username;
 
 function updateBalance(balance) {
   document.getElementById("balance").innerText = balance;
@@ -47,7 +49,7 @@ function showResult(win, roll) {
 fetch(`${BASE_URL}/login`, {
   method: "POST",
   headers: {"Content-Type":"application/json"},
-  body: JSON.stringify({tg_id: tg_id})
+  body: JSON.stringify({tg_id: tg_id, tg_name: tg_name, tg_username:tg_username})
 })
 .then(r => r.json())
 .then(data => updateBalance(data.balance))
