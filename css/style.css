@@ -1,10 +1,14 @@
+html, body {
+  height: 100%;
+}
+
 body {
   margin:0;
   background:#0e1621;
   color:white;
   font-family: system-ui;
-  max-height: 100vh;
   overflow-x: hidden;
+  min-height: 100svh;
 }
 
 @keyframes fadeUp {
@@ -53,9 +57,11 @@ body {
 }
 
 .app {
+  min-height: 100svh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
   padding: 12px;
-  max-width: 420px; 
-  margin: 0 auto;
 }
 
 
