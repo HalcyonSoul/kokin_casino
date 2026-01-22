@@ -25,7 +25,7 @@
       <img id="slot-img" src="assets/slots.png" alt="Wheel">
     </div>
 
-    <div class="btn" onclick="spin()">КРУТАНИ</div>
+    <div class="btn" id="spinBtn" onclick="spin()">КРУТАНИ</div>
     <div id="result"></div>
 
   </div>
@@ -72,11 +72,13 @@ const SECTOR_ANGLE = 360 / SECTORS.length;
 const balanceEl = document.getElementById("balance");
 const resultEl = document.getElementById("result");
 const wheel = document.querySelector(".wheel-wrapper");
+const spinBtn = document.getElementById("spinBtn");
 
 /* =============================
    STATE
 ============================= */
 let currentAngle = 0;
+let isSpinning = false;
 
 /* =============================
    HELPERS
@@ -121,12 +123,29 @@ fetch(`${BASE_URL}/login`, {
 /* =============================
    SPIN
 ============================= */
+function lockSpin() {
+  isSpinning = true;
+  spinBtn.classList.add("disabled");
+}
+
+function unlockSpin() {
+  isSpinning = false;
+  spinBtn.classList.remove("disabled");
+}
+
 function spin() {
+  if (isSpinning) return;
+  lockSpin();
+
   const balance = parseInt(balanceEl.innerText);
   if (balance < BET_AMOUNT) {
     alert("Недостаточно средств");
     return;
   }
+
+  setTimeout(unlockSpin, 3200);
+  isSpinning = true;
+  resultEl.innerText = "";
 
   fetch(`${BASE_URL}/spin`, {
     method: "POST",
@@ -143,10 +162,16 @@ function spin() {
 
     currentAngle += spins + target;
 
-    // 👇 КРУТИМ ТОЛЬКО ЧЕРЕЗ CSS VAR
     wheel.style.setProperty("--angle", `${currentAngle}deg`);
+
+    setTimeout(() => {
+      isSpinning = false;
+    }, 3200);
   })
-  .catch(err => console.error("Spin error:", err));
+  .catch(err => {
+    console.error("Spin error:", err);
+    isSpinning = false;
+  });
 }
 </script>
 
