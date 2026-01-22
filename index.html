@@ -54,14 +54,18 @@ const BET_AMOUNT = 50;
    SECTORS (ПО ПОРЯДКУ КАРТИНКИ)
 ============================= */
 const SECTORS = [
-  { value: 0 },
-  { value: 2 },
   { value: "COCK IN" },
   { value: 0 },
-  { value: 3 },
+  { value: 67, disabled: true },
   { value: 2 },
   { value: 0 },
+  { value: 2 },
+  { value: 3 },
+  { value: 0 },
+  { value: 3 },
   { value: 10 },
+  { value: 0 },
+  { value: 2 },
 ];
 
 const SECTOR_ANGLE = 360 / SECTORS.length;
@@ -94,14 +98,22 @@ function showResult(win, roll) {
 
 function getTargetAngle(roll) {
   const indexes = SECTORS
-    .map((s, i) => s.value === roll ? i : -1)
+    .map((s, i) =>
+      s.value === roll && !s.disabled ? i : -1
+    )
     .filter(i => i !== -1);
 
-  const index = indexes[Math.floor(Math.random() * indexes.length)];
-  const offset = Math.random() * (SECTOR_ANGLE - 8) + 4;
-  const center = index * SECTOR_ANGLE + offset;
+  if (!indexes.length) {
+    console.error("Нет сектора под roll:", roll);
+    return 0;
+  }
 
-  return 360 - center;
+  const index = indexes[Math.floor(Math.random() * indexes.length)];
+
+  const offset = Math.random() * (SECTOR_ANGLE - 8) + 4;
+  const angle = index * SECTOR_ANGLE + offset;
+
+  return 360 - angle;
 }
 
 /* =============================
