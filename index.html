@@ -175,6 +175,7 @@ function spin() {
   if (isSpinning) return;
   lockSpin();
   resultEl.innerText = "";
+  
   const balance = parseInt(balanceEl.innerText);
   if (balance < BET_AMOUNT) {
     alert("Недостаточно средств");
@@ -189,9 +190,13 @@ function spin() {
   })
   .then(r => r.json())
   .then(data => {
+    // сброс угла перед новой прокруткой
+    currentAngle = 0;
+    wheel.style.setProperty('--angle', `0deg`);
+
     const target = getTargetAngle(data.roll);
     const spins = 360 * (5 + Math.floor(Math.random() * 3));
-    const totalDegrees = currentAngle + spins + target;
+    const totalDegrees = spins + target;
 
     const tickSound = new Audio('assets/tick.mp3');
     let lastSector = -1;
@@ -201,12 +206,11 @@ function spin() {
     function animate(time) {
       const elapsed = time - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      // easeOut
-      const ease = 1 - Math.pow(1 - progress, 3);
-      const angle = currentAngle + (totalDegrees - currentAngle) * ease;
+      const ease = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+      const angle = totalDegrees * ease;
       wheel.style.setProperty('--angle', `${angle}deg`);
 
-      // щелчок при переходе сектора
+      // щелчки при переходе через сектора
       const currentSector = Math.floor((360 - (angle % 360)) / SECTOR_ANGLE) % SECTORS.length;
       if (currentSector !== lastSector) {
         tickSound.currentTime = 0;
@@ -217,24 +221,23 @@ function spin() {
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
-        currentAngle = totalDegrees;
+        currentAngle = 0; // после остановки сброс для следующей прокрутки
         unlockSpin();
 
-        // ПОСЛЕ ОСТАНОВКИ обновляем баланс и показываем результат
+        // после остановки обновляем баланс и показываем результат
         updateBalance(data.balance);
         showResult(data.win, data.roll);
 
+        // подсветка выпавшего сектора
         highlightSector(data.roll);
 
-        // если крупный выигрыш
+        // крупный выигрыш
         if (data.roll >= 1000) {
-          // анимация взрыва экрана
           const explosion = document.createElement('div');
           explosion.className = 'explosion';
           document.body.appendChild(explosion);
           setTimeout(() => explosion.remove(), 800);
 
-          // анимация большого выигрыша
           resultEl.classList.add('big-win');
           setTimeout(() => resultEl.classList.remove('big-win'), 1000);
         }
