@@ -141,3 +141,31 @@ body {
   height: 100%;
   display: block;
 }
+
+.explosion {
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(0,0,0,0) 80%);
+  pointer-events: none;
+  animation: explode 0.8s ease-out forwards;
+  z-index: 9999;
+}
+
+@keyframes explode {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(3); opacity: 0; }
+}
+
+/* Большой выигрыш на сообщении */
+.big-win {
+  animation: bigWin 1s ease-out forwards;
+}
+
+@keyframes bigWin {
+  0% { transform: scale(1); color: #fff; }
+  50% { transform: scale(2); color: #ff0; text-shadow: 0 0 20px #ff0; }
+  100% { transform: scale(1); color: #fff; }
+}
