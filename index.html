@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>🎰 Telegram Casino</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🎰 Kokin Casino</title>
+
 <link rel="stylesheet" href="css/style.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -10,52 +12,83 @@
 <body>
 <div class="app">
 
+  <!-- CARD: USER INFO -->
   <div class="card">
     <h2>🎰 Kokin Casino</h2>
-    <div>Balance: <span id="balance">0</span></div>
+    <div>Balance: <b><span id="balance">0</span></b></div>
   </div>
 
+  <!-- CARD: GAME -->
   <div class="card game">
+
     <div class="wheel-wrapper">
-      <img id="slot-img" src="assets/slots.png" alt="Slots">
+      <img id="slot-img" src="assets/slots.png" alt="Wheel">
     </div>
+
     <div class="btn" onclick="spin()">КРУТАНИ</div>
     <div id="result"></div>
+
   </div>
 
 </div>
 
 <script>
-const BASE_URL = "https://backendkokin-production.up.railway.app";
+/* =============================
+   TELEGRAM
+============================= */
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-let user = tg.initDataUnsafe.user;
-let tg_id = user.id;
-let tg_name = user.first_name;
-let tg_username = user.username;
+const user = tg.initDataUnsafe.user;
+const tg_id = user.id;
+const tg_name = user.first_name || "";
+const tg_username = user.username || "";
 
+/* =============================
+   CONFIG
+============================= */
+const BASE_URL = "https://backendkokin-production.up.railway.app";
+const BET_AMOUNT = 50;
+
+/* =============================
+   SECTORS (ПО ПОРЯДКУ КАРТИНКИ)
+============================= */
+const SECTORS = [
+  { value: 0 },
+  { value: 2 },
+  { value: "COCK IN" },
+  { value: 0 },
+  { value: 3 },
+  { value: 2 },
+  { value: 0 },
+  { value: 10 },
+];
+
+const SECTOR_ANGLE = 360 / SECTORS.length;
+
+/* =============================
+   DOM
+============================= */
+const balanceEl = document.getElementById("balance");
+const resultEl = document.getElementById("result");
+const wheel = document.querySelector(".wheel-wrapper");
+
+/* =============================
+   STATE
+============================= */
+let currentAngle = 0;
+
+/* =============================
+   HELPERS
+============================= */
 function updateBalance(balance) {
-  document.getElementById("balance").innerText = balance;
+  balanceEl.innerText = balance;
 }
 
 function showResult(win, roll) {
-  const res = document.getElementById("result");
-  res.innerText = win ? "🎉 WIN " + roll : "❌ LOSE " + roll;
-  res.className = win ? "win" : "lose";
+  resultEl.innerText = win ? `🎉 WIN ${roll}` : `❌ LOSE ${roll}`;
+  resultEl.className = win ? "win" : "lose";
 }
-
-// Логин и получение баланса
-fetch(`${BASE_URL}/login`, {
-  method: "POST",
-  headers: {"Content-Type":"application/json"},
-  body: JSON.stringify({tg_id: tg_id, tg_name: tg_name, tg_username:tg_username})
-})
-.then(r => r.json())
-.then(data => updateBalance(data.balance))
-.catch(err => console.error("Login error:", err));
-
-let currentAngle = 0;
 
 function getTargetAngle(roll) {
   const indexes = SECTORS
@@ -63,21 +96,36 @@ function getTargetAngle(roll) {
     .filter(i => i !== -1);
 
   const index = indexes[Math.floor(Math.random() * indexes.length)];
+  const offset = Math.random() * (SECTOR_ANGLE - 8) + 4;
+  const center = index * SECTOR_ANGLE + offset;
 
-  const center = index * SECTOR_ANGLE + SECTOR_ANGLE / 2;
-
-  return 360 - center + 5;
+  return 360 - center;
 }
 
-// Функция спина
-const BET_AMOUNT = 50; // ставка
+/* =============================
+   LOGIN
+============================= */
+fetch(`${BASE_URL}/login`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    tg_id,
+    tg_name,
+    tg_username
+  })
+})
+.then(r => r.json())
+.then(data => updateBalance(data.balance))
+.catch(err => console.error("Login error:", err));
 
+/* =============================
+   SPIN
+============================= */
 function spin() {
-  const balance = parseInt(document.getElementById("balance").innerText);
-
+  const balance = parseInt(balanceEl.innerText);
   if (balance < BET_AMOUNT) {
-    alert("Недостаточно средств для спина!");
-    return; // прекращаем выполнение
+    alert("Недостаточно средств");
+    return;
   }
 
   fetch(`${BASE_URL}/spin`, {
@@ -90,24 +138,16 @@ function spin() {
     updateBalance(data.balance);
     showResult(data.win, data.roll);
 
-    const wheel = document.querySelector(".wheel-wrapper");
-
-    const spins = 360 * (5 + Math.floor(Math.random() * 3)); // 5–7 оборотов
+    const spins = 360 * (5 + Math.floor(Math.random() * 3));
     const target = getTargetAngle(data.roll);
 
-    const next = currentAngle + spins + target;
+    currentAngle += spins + target;
 
-    wheel.style.transition = "none";
-    wheel.style.transform = `rotate(${currentAngle}deg)`;
-    wheel.offsetHeight;
-
-    wheel.style.transition = "transform 4s cubic-bezier(.17,.67,.25,1)";
-    wheel.style.transform = `rotate(${next}deg)`;
-
-    currentAngle = next;
-  });
+    // 👇 КРУТИМ ТОЛЬКО ЧЕРЕЗ CSS VAR
+    wheel.style.setProperty("--angle", `${currentAngle}deg`);
+  })
+  .catch(err => console.error("Spin error:", err));
 }
-
 </script>
 
 </body>
