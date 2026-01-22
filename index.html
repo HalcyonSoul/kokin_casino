@@ -175,7 +175,7 @@ function spin() {
   if (isSpinning) return;
   lockSpin();
   resultEl.innerText = "";
-  
+
   const balance = parseInt(balanceEl.innerText);
   if (balance < BET_AMOUNT) {
     alert("Недостаточно средств");
@@ -190,61 +190,42 @@ function spin() {
   })
   .then(r => r.json())
   .then(data => {
-    // сброс угла перед новой прокруткой
+    // Сброс колеса перед вращением
     currentAngle = 0;
+    wheel.style.transition = "none";
     wheel.style.setProperty('--angle', `0deg`);
 
+    // Расчёт угла для нужного сектора
     const target = getTargetAngle(data.roll);
     const spins = 360 * (5 + Math.floor(Math.random() * 3));
-    const totalDegrees = spins + target;
+    const finalAngle = spins + target;
 
-    const tickSound = new Audio('assets/tick.mp3');
-    let lastSector = -1;
-    const duration = 3000;
-    const startTime = performance.now();
+    // Делаем плавную, но без инерции анимацию через transition
+    setTimeout(() => {
+      wheel.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
+      wheel.style.setProperty('--angle', `${finalAngle}deg`);
+    }, 50); // маленькая задержка, чтобы браузер успел применить ноль градусов
 
-    function animate(time) {
-      const elapsed = time - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3); // easeOutCubic
-      const angle = totalDegrees * ease;
-      wheel.style.setProperty('--angle', `${angle}deg`);
+    // Подсветка и результат после остановки
+    setTimeout(() => {
+      currentAngle = 0; // сброс для следующей прокрутки
+      unlockSpin();
 
-      // щелчки при переходе через сектора
-      const currentSector = Math.floor((360 - (angle % 360)) / SECTOR_ANGLE) % SECTORS.length;
-      if (currentSector !== lastSector) {
-        tickSound.currentTime = 0;
-        tickSound.play();
-        lastSector = currentSector;
+      updateBalance(data.balance);
+      showResult(data.win, data.roll);
+      highlightSector(data.roll);
+
+      // крупный выигрыш
+      if (data.roll >= 1000) {
+        const explosion = document.createElement('div');
+        explosion.className = 'explosion';
+        document.body.appendChild(explosion);
+        setTimeout(() => explosion.remove(), 800);
+
+        resultEl.classList.add('big-win');
+        setTimeout(() => resultEl.classList.remove('big-win'), 1000);
       }
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        currentAngle = 0; // после остановки сброс для следующей прокрутки
-        unlockSpin();
-
-        // после остановки обновляем баланс и показываем результат
-        updateBalance(data.balance);
-        showResult(data.win, data.roll);
-
-        // подсветка выпавшего сектора
-        highlightSector(data.roll);
-
-        // крупный выигрыш
-        if (data.roll >= 1000) {
-          const explosion = document.createElement('div');
-          explosion.className = 'explosion';
-          document.body.appendChild(explosion);
-          setTimeout(() => explosion.remove(), 800);
-
-          resultEl.classList.add('big-win');
-          setTimeout(() => resultEl.classList.remove('big-win'), 1000);
-        }
-      }
-    }
-
-    requestAnimationFrame(animate);
+    }, 3050); // время совпадает с transition 3s + маленький запас
   })
   .catch(err => {
     console.error("Spin error:", err);
