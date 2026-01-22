@@ -116,6 +116,42 @@ function getTargetAngle(roll) {
   return 360 - angle;
 }
 
+function highlightSector(roll) {
+  // находим все индексы с этим roll
+  const indexes = SECTORS
+    .map((s, i) => s.value === roll && !s.disabled ? i : -1)
+    .filter(i => i !== -1);
+  
+  if (!indexes.length) return;
+
+  const index = indexes[Math.floor(Math.random() * indexes.length)];
+  const angle = index * SECTOR_ANGLE + SECTOR_ANGLE / 2; // центр сектора
+  const rad = (angle) * Math.PI / 180;
+
+  const radius = 120; // половина ширины колеса (под размер твоего колеса)
+  const x = 150 + radius * Math.cos(rad) - 30; // -30 чтобы центрировать highlight
+  const y = 150 + radius * Math.sin(rad) - 30;
+
+  const highlight = document.createElement('div');
+  highlight.className = 'highlight';
+  highlight.style.left = `${x}px`;
+  highlight.style.top = `${y}px`;
+
+  wheel.appendChild(highlight);
+
+  setTimeout(() => highlight.remove(), 3000); // удаляем через 3 сек
+}
+
+function lockSpin() {
+  isSpinning = true;
+  spinBtn.classList.add("disabled");
+}
+
+function unlockSpin() {
+  isSpinning = false;
+  spinBtn.classList.remove("disabled");
+}
+
 /* =============================
    LOGIN
 ============================= */
@@ -135,16 +171,6 @@ fetch(`${BASE_URL}/login`, {
 /* =============================
    SPIN
 ============================= */
-function lockSpin() {
-  isSpinning = true;
-  spinBtn.classList.add("disabled");
-}
-
-function unlockSpin() {
-  isSpinning = false;
-  spinBtn.classList.remove("disabled");
-}
-
 function spin() {
   if (isSpinning) return;
   lockSpin();
@@ -197,6 +223,8 @@ function spin() {
         // ПОСЛЕ ОСТАНОВКИ обновляем баланс и показываем результат
         updateBalance(data.balance);
         showResult(data.win, data.roll);
+
+        highlightSector(data.roll);
 
         // если крупный выигрыш
         if (data.roll >= 1000) {
