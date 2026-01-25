@@ -7,19 +7,52 @@
 
 <link rel="stylesheet" href="css/style.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+.pointer {
+  position: absolute;
+  top: 105px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 20px solid #00ff99;
+  z-index: 50;
+}
+
+.highlight {
+  position: absolute;
+  top: 92px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+  border: 3px solid #00ff99;
+  border-radius: 50%;
+  animation: pulse 0.8s infinite alternate;
+  pointer-events: none;
+  z-index: 40;
+}
+
+@keyframes pulse {
+  from { transform: translateX(-50%) scale(1); }
+  to { transform: translateX(-50%) scale(1.25); }
+}
+</style>
 </head>
 
 <body>
 <div class="app">
 
-  <!-- CARD: USER INFO -->
   <div class="card">
     <h2>🎰 Kokin Casino</h2>
     <div>Balance: <b><span id="balance">0</span></b></div>
   </div>
 
-  <!-- CARD: GAME -->
-  <div class="card game">
+  <div class="card game" style="position:relative;">
+    <div class="pointer"></div>
 
     <div class="wheel-wrapper">
       <img id="slot-img" src="assets/slots.png" alt="Wheel">
@@ -27,15 +60,11 @@
 
     <div class="btn" id="spinBtn" onclick="spin()">КРУТАНИ</div>
     <div id="result"></div>
-
   </div>
 
 </div>
 
 <script>
-/* =============================
-   TELEGRAM
-============================= */
 const tg = window.Telegram.WebApp;
 tg.expand();
 
@@ -44,51 +73,44 @@ const tg_id = user.id;
 const tg_name = user.first_name || "";
 const tg_username = user.username || "";
 
-/* =============================
-   CONFIG
-============================= */
 const BASE_URL = "https://backendkokin-production.up.railway.app";
 const BET_AMOUNT = 50;
 
-/* =============================
-   SECTORS (ПО ПОРЯДКУ КАРТИНКИ)
-============================= */
 const SECTORS = [
+  { value: 2 },
   { value: "COCK IN" },
   { value: 0 },
-  { value: 67, disabled: true },
   { value: 2 },
   { value: 0 },
-  { value: 2 },
-  { value: 3 },
-  { value: 0 },
-  { value: 3 },
   { value: 10 },
   { value: 0 },
-  { value: 2 },
-];
+  { value: 3 },
+  { value: 0 },
+  { value: 3 },
+  { value: 0 },
+  { value: 10 },
+]
 
+const IMAGE_OFFSET = -90;
 const SECTOR_ANGLE = 360 / SECTORS.length;
+const POINTER_ANGLE = 270;
 
-/* =============================
-   DOM
-============================= */
 const balanceEl = document.getElementById("balance");
 const resultEl = document.getElementById("result");
 const wheel = document.querySelector(".wheel-wrapper");
 const spinBtn = document.getElementById("spinBtn");
 
-/* =============================
-   STATE
-============================= */
-let currentAngle = 0;
 let isSpinning = false;
 
-/* =============================
-   HELPERS
-============================= */
-function clearHighlights() {
+function clearHighlight() {
   document.querySelectorAll(".highlight").forEach(h => h.remove());
+}
+
+function highlightTop() {
+  clearHighlight();
+  const h = document.createElement("div");
+  h.className = "highlight";
+  wheel.appendChild(h);
 }
 
 function updateBalance(balance) {
@@ -100,83 +122,30 @@ function showResult(win, roll) {
   resultEl.className = win ? "win" : "lose";
 }
 
-function getTargetAngle(roll) {
-  const indexes = SECTORS
-    .map((s, i) =>
-      s.value === roll && !s.disabled ? i : -1
-    )
-    .filter(i => i !== -1);
-
-  if (!indexes.length) {
-    console.error("Нет сектора под roll:", roll);
-    return 0;
-  }
-
-  const index = indexes[Math.floor(Math.random() * indexes.length)];
-
-  const offset = Math.random() * (SECTOR_ANGLE - 8) + 4;
-  const angle = index * SECTOR_ANGLE + offset;
-
-  return 360 - angle;
-}
-
-function lockSpin() {
-  isSpinning = true;
-  spinBtn.classList.add("disabled");
-}
-
-function unlockSpin() {
-  isSpinning = false;
-  spinBtn.classList.remove("disabled");
-}
-
 function getSectorIndexByRoll(roll) {
   const indexes = SECTORS
-    .map((s, i) => (s.value === roll && !s.disabled ? i : -1))
+    .map((s, i) => s.value === roll && !s.disabled ? i : -1)
     .filter(i => i !== -1);
 
-  if (!indexes.length) {
-    console.error("Нет сектора под roll:", roll);
-    return null;
-  }
-
-  return indexes[Math.floor(Math.random() * indexes.length)];
+  return indexes.length
+    ? indexes[Math.floor(Math.random() * indexes.length)]
+    : null;
 }
 
-/* =============================
-   LOGIN
-============================= */
 fetch(`${BASE_URL}/login`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    tg_id,
-    tg_name,
-    tg_username
-  })
+  body: JSON.stringify({ tg_id, tg_name, tg_username })
 })
 .then(r => r.json())
-.then(data => updateBalance(data.balance))
-.catch(err => console.error("Login error:", err));
-
-/* =============================
-   SPIN
-============================= */
+.then(d => updateBalance(d.balance));
 
 function spin() {
-  if (isSpinning) return; // блокировка кнопки
+  if (isSpinning) return;
   isSpinning = true;
   spinBtn.classList.add("disabled");
-  clearHighlights();
+  clearHighlight();
   resultEl.innerText = "";
-
-  const balance = parseInt(balanceEl.innerText);
-  if (balance < BET_AMOUNT) {
-    alert("Недостаточно средств");
-    isSpinning = false;
-    spinBtn.classList.remove("disabled");
-    return;
-  }
 
   fetch(`${BASE_URL}/spin`, {
     method: "POST",
@@ -185,70 +154,35 @@ function spin() {
   })
   .then(r => r.json())
   .then(data => {
-    wheel.style.transition = "none";
-    wheel.style.setProperty('--angle', `0deg`);
-
     const sectorIndex = getSectorIndexByRoll(data.roll);
     if (sectorIndex === null) return;
-    const targetAngle = 360 - (sectorIndex * SECTOR_ANGLE + SECTOR_ANGLE / 2);
+
+    wheel.style.transition = "none";
+    wheel.style.setProperty("--angle", "0deg");
+
+    const targetAngle =
+  IMAGE_OFFSET +
+  POINTER_ANGLE -
+  (sectorIndex * SECTOR_ANGLE + SECTOR_ANGLE / 2);
+
     const spins = 360 * (5 + Math.floor(Math.random() * 3));
     const finalAngle = spins + targetAngle;
+    wheel.style.setProperty("--angle", `${finalAngle}deg`);
 
     setTimeout(() => {
       wheel.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
-      wheel.style.setProperty('--angle', `${finalAngle}deg`);
+      wheel.style.setProperty("--angle", `${finalAngle}deg`);
     }, 50);
 
     setTimeout(() => {
       updateBalance(data.balance);
       showResult(data.win, data.roll);
-
-      highlightSectorAtTop(sectorIndex);
-
-      if (data.roll >= 1000) {
-        const explosion = document.createElement('div');
-        explosion.className = 'explosion';
-        document.body.appendChild(explosion);
-        setTimeout(() => explosion.remove(), 800);
-
-        resultEl.classList.add('big-win');
-        setTimeout(() => resultEl.classList.remove('big-win'), 1000);
-      }
-
+      highlightTop();
       isSpinning = false;
       spinBtn.classList.remove("disabled");
     }, 3100);
-  })
-  .catch(err => {
-    console.error("Spin error:", err);
-    isSpinning = false;
-    spinBtn.classList.remove("disabled");
   });
 }
-
-// Подсветка именно сектора который оказался вверху
-function highlightSectorAtTop(sectorIndex) {
-  clearHighlights();
-
-  const angle =
-    360 - (sectorIndex * SECTOR_ANGLE + SECTOR_ANGLE / 2);
-
-  const rad = angle * Math.PI / 180;
-  const radius = 120;
-
-  const x = 150 + radius * Math.cos(rad) - 30;
-  const y = 150 + radius * Math.sin(rad) - 30;
-
-  const highlight = document.createElement('div');
-  highlight.className = 'highlight';
-  highlight.style.left = `${x}px`;
-  highlight.style.top = `${y}px`;
-
-  wheel.appendChild(highlight);
-
-  setTimeout(() => highlight.remove(), 3000);
-}
-
 </script>
 
 </body>
