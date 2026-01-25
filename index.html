@@ -9,22 +9,26 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
+.card.game {
+  position: relative;
+}
+
 .pointer {
   position: absolute;
-  top: 105px;
+  top: 92px;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
   border-left: 12px solid transparent;
   border-right: 12px solid transparent;
-  border-bottom: 20px solid #00ff99;
-  z-index: 50;
+  border-bottom: 18px solid #00ff99;
+  z-index: 20;
 }
 
 .highlight {
   position: absolute;
-  top: 92px;
+  top: 80px;
   left: 50%;
   transform: translateX(-50%);
   width: 60px;
@@ -33,7 +37,7 @@
   border-radius: 50%;
   animation: pulse 0.8s infinite alternate;
   pointer-events: none;
-  z-index: 40;
+  z-index: 15;
 }
 
 @keyframes pulse {
@@ -51,33 +55,40 @@
     <div>Balance: <b><span id="balance">0</span></b></div>
   </div>
 
-  <div class="card game" style="position:relative;">
+  <div class="card game">
     <div class="pointer"></div>
 
     <div class="wheel-wrapper">
       <img id="slot-img" src="assets/slots.png" alt="Wheel">
     </div>
 
-    <div class="btn" id="spinBtn" onclick="spin()">КРУТАНИ</div>
+    <div class="btn" id="spinBtn">КРУТАНИ</div>
     <div id="result"></div>
   </div>
 
 </div>
 
 <script>
+/* =============================
+   TELEGRAM
+============================= */
 const tg = window.Telegram.WebApp;
 tg.expand();
 
 const user = tg.initDataUnsafe.user;
 const tg_id = user.id;
-const tg_name = user.first_name || "";
-const tg_username = user.username || "";
 
+/* =============================
+   CONFIG
+============================= */
 const BASE_URL = "https://backendkokin-production.up.railway.app";
 const BET_AMOUNT = 50;
 
+/* =============================
+   SECTORS (СТРОГО ПОД КАРТИНКУ)
+============================= */
 const SECTORS = [
-  { value: 2 },
+  { value: 2 },        // X2 (СВЕРХУ)
   { value: "COCK IN" },
   { value: 0 },
   { value: 2 },
@@ -89,18 +100,36 @@ const SECTORS = [
   { value: 3 },
   { value: 0 },
   { value: 10 },
-]
+];
 
-const IMAGE_OFFSET = -90;
 const SECTOR_ANGLE = 360 / SECTORS.length;
 const POINTER_ANGLE = 270;
+const IMAGE_OFFSET = 15;
 
+/* =============================
+   DOM
+============================= */
 const balanceEl = document.getElementById("balance");
 const resultEl = document.getElementById("result");
 const wheel = document.querySelector(".wheel-wrapper");
 const spinBtn = document.getElementById("spinBtn");
 
+/* =============================
+   STATE
+============================= */
 let isSpinning = false;
+
+/* =============================
+   HELPERS
+============================= */
+function updateBalance(b) {
+  balanceEl.innerText = b;
+}
+
+function showResult(win, roll) {
+  resultEl.innerText = win ? `🎉 WIN ${roll}` : `❌ LOSE ${roll}`;
+  resultEl.className = win ? "win" : "lose";
+}
 
 function clearHighlight() {
   document.querySelectorAll(".highlight").forEach(h => h.remove());
@@ -113,34 +142,29 @@ function highlightTop() {
   wheel.appendChild(h);
 }
 
-function updateBalance(balance) {
-  balanceEl.innerText = balance;
-}
-
-function showResult(win, roll) {
-  resultEl.innerText = win ? `🎉 WIN ${roll}` : `❌ LOSE ${roll}`;
-  resultEl.className = win ? "win" : "lose";
-}
-
 function getSectorIndexByRoll(roll) {
   const indexes = SECTORS
-    .map((s, i) => s.value === roll && !s.disabled ? i : -1)
+    .map((s, i) => s.value === roll ? i : -1)
     .filter(i => i !== -1);
 
-  return indexes.length
-    ? indexes[Math.floor(Math.random() * indexes.length)]
-    : null;
+  return indexes[Math.floor(Math.random() * indexes.length)];
 }
 
+/* =============================
+   LOGIN
+============================= */
 fetch(`${BASE_URL}/login`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ tg_id, tg_name, tg_username })
+  body: JSON.stringify({ tg_id })
 })
 .then(r => r.json())
 .then(d => updateBalance(d.balance));
 
-function spin() {
+/* =============================
+   SPIN
+============================= */
+spinBtn.onclick = () => {
   if (isSpinning) return;
   isSpinning = true;
   spinBtn.classList.add("disabled");
@@ -154,20 +178,18 @@ function spin() {
   })
   .then(r => r.json())
   .then(data => {
-    const sectorIndex = getSectorIndexByRoll(data.roll);
-    if (sectorIndex === null) return;
+    const index = getSectorIndexByRoll(data.roll);
 
     wheel.style.transition = "none";
     wheel.style.setProperty("--angle", "0deg");
 
     const targetAngle =
-  IMAGE_OFFSET +
-  POINTER_ANGLE -
-  (sectorIndex * SECTOR_ANGLE + SECTOR_ANGLE / 2);
+      POINTER_ANGLE -
+      (index * SECTOR_ANGLE + SECTOR_ANGLE / 2) -
+      IMAGE_OFFSET;
 
     const spins = 360 * (5 + Math.floor(Math.random() * 3));
     const finalAngle = spins + targetAngle;
-    wheel.style.setProperty("--angle", `${finalAngle}deg`);
 
     setTimeout(() => {
       wheel.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
@@ -182,7 +204,7 @@ function spin() {
       spinBtn.classList.remove("disabled");
     }, 3100);
   });
-}
+};
 </script>
 
 </body>
