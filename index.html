@@ -1,25 +1,12 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>🎰 Kokin Casino</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kokin Casino</title>
 
 <link rel="stylesheet" href="css/style.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<style>
-:root {
-  --angle: 0deg;
-}
-
-.wheel-wrapper {
-  width: 260px;
-  height: 260px;
-  margin: 0 auto;
-  transform: rotate(var(--angle));
-}
-</style>
 </head>
 
 <body>
@@ -27,14 +14,13 @@
 
   <div class="card">
     <h2>🎰 Kokin Casino</h2>
-    <div>Balance: <b><span id="balance">0</span></b></div>
+    Balance: <b><span id="balance">0</span></b>
   </div>
 
-  <div class="pointer"></div>
-
   <div class="card game">
-    <div class="wheel-wrapper" id="wheel">
-      <img src="assets/slots.png" width="260" height="260" draggable="false">
+    <div class="wheel-wrapper">
+      <div class="pointer"></div>
+      <img src="assets/slots.png" id="wheel">
     </div>
 
     <div class="btn" id="spinBtn">КРУТАНИ</div>
@@ -44,88 +30,67 @@
 </div>
 
 <script>
-/* ================= TELEGRAM ================= */
+/* ===== TELEGRAM ===== */
 const tg = window.Telegram.WebApp;
 tg.expand();
-const user = tg.initDataUnsafe.user;
-const tg_id = user.id;
+const tg_id = tg.initDataUnsafe.user.id;
 
-/* ================= CONFIG ================= */
+/* ===== CONFIG ===== */
 const BASE_URL = "https://backendkokin-production.up.railway.app";
-const BET_AMOUNT = 50;
+const BET = 50;
 
-/* ================= SECTORS =================
-ВАЖНО:
-index 1 (COCK IN) — СТРОГО ПОД СТРЕЛКОЙ при angle = 0
+/* ===== СЕКТОРА (ПО КАРТИНКЕ, ПО ЧАСОВОЙ) =====
+   СТРЕЛКА СМОТРИТ ВВЕРХ
 */
 const SECTORS = [
-  { value: "ZERO" },
-  { value: "COCK IN" }, // BASE
-  { value: "ZERO" },
-  { value: 67, disabled: true },
-  { value: 2 },
-  { value: "ZERO" },
-  { value: 3 },
-  { value: "X3" },
-  { value: 2 },
-  { value: "ZERO" },
-  { value: "X10" },
-  { value: 3 }
+  "ZERO",
+  "X2",
+  "COCK IN",
+  "ZERO",
+  67,
+  "X2",
+  "ZERO",
+  "X3",
+  "X2",
+  "ZERO",
+  "X10",
+  "X3"
 ];
 
 const SECTOR_ANGLE = 360 / SECTORS.length;
-const BASE_SECTOR_INDEX = 1;
 
-/* ================= DOM ================= */
+/* ===== DOM ===== */
+const wheel = document.getElementById("wheel");
+const btn = document.getElementById("spinBtn");
 const balanceEl = document.getElementById("balance");
 const resultEl = document.getElementById("result");
-const wheel = document.getElementById("wheel");
-const spinBtn = document.getElementById("spinBtn");
 
-/* ================= STATE ================= */
-let isSpinning = false;
+let spinning = false;
+let rotation = 0;
 
-/* ================= HELPERS ================= */
-function updateBalance(b) {
-  balanceEl.innerText = b;
-}
-
-function showResult(win, roll) {
-  resultEl.innerText = win ? `🎉 WIN ${roll}` : `❌ LOSE ${roll}`;
-  resultEl.className = win ? "win" : "lose";
-}
-
-function getSectorIndexByRoll(roll) {
-  const list = SECTORS
-    .map((s, i) => s.value == roll && !s.disabled ? i : null)
-    .filter(i => i !== null);
-
-  return list[Math.floor(Math.random() * list.length)];
-}
-
-/* ================= LOGIN ================= */
+/* ===== LOGIN ===== */
 fetch(`${BASE_URL}/login`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ tg_id })
 })
 .then(r => r.json())
-.then(d => updateBalance(d.balance));
+.then(d => balanceEl.innerText = d.balance);
 
-/* ================= SPIN ================= */
-spinBtn.onclick = () => {
-  if (isSpinning) return;
-  isSpinning = true;
-  spinBtn.classList.add("disabled");
+/* ===== HELPERS ===== */
+function sectorIndexByRoll(roll) {
+  const list = SECTORS
+    .map((v,i) => v == roll ? i : -1)
+    .filter(i => i !== -1);
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+/* ===== SPIN ===== */
+btn.onclick = () => {
+  if (spinning) return;
+  spinning = true;
+  btn.classList.add("disabled");
   resultEl.innerText = "";
-
-  const balance = +balanceEl.innerText;
-  if (balance < BET_AMOUNT) {
-    alert("Недостаточно средств");
-    isSpinning = false;
-    spinBtn.classList.remove("disabled");
-    return;
-  }
 
   fetch(`${BASE_URL}/spin`, {
     method: "POST",
@@ -134,32 +99,33 @@ spinBtn.onclick = () => {
   })
   .then(r => r.json())
   .then(data => {
+    const index = sectorIndexByRoll(data.roll);
 
-    const sectorIndex = getSectorIndexByRoll(data.roll);
-
-    const targetAngle =
-      360 -
-      ((sectorIndex - BASE_SECTOR_INDEX) * SECTOR_ANGLE + SECTOR_ANGLE / 2);
+    const target =
+      360 - (index * SECTOR_ANGLE + SECTOR_ANGLE / 2);
 
     const spins = 360 * (5 + Math.floor(Math.random() * 3));
-    const finalAngle = spins + targetAngle;
+    rotation += spins + target;
 
-    wheel.style.transition = "none";
-    wheel.style.setProperty("--angle", "0deg");
-
-    setTimeout(() => {
-      wheel.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
-      wheel.style.setProperty("--angle", `${finalAngle}deg`);
-    }, 50);
+    wheel.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
+    wheel.style.transform = `rotate(${rotation}deg)`;
 
     setTimeout(() => {
-      updateBalance(data.balance);
-      showResult(data.win, data.roll);
-      isSpinning = false;
-      spinBtn.classList.remove("disabled");
+      balanceEl.innerText = data.balance;
+      resultEl.innerText = data.win
+        ? `🎉 WIN ${data.roll}`
+        : `❌ LOSE ${data.roll}`;
+
+      spinning = false;
+      btn.classList.remove("disabled");
     }, 3100);
+  })
+  .catch(() => {
+    spinning = false;
+    btn.classList.remove("disabled");
   });
 };
 </script>
+
 </body>
 </html>

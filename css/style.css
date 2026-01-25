@@ -117,6 +117,7 @@ body {
 }
 
 .wheel-wrapper {
+  position: relative; /* ← ВАЖНО */
   --angle: 0deg;
 
   width: 300px;
@@ -125,7 +126,6 @@ body {
 
   transform-origin: 50% 50%;
   transform: rotate(var(--angle));
-
   transition: transform 3s cubic-bezier(.17,.67,.25,1);
   will-change: transform;
 }
@@ -189,13 +189,13 @@ body {
 
 .pointer {
   position: absolute;
-  top: -6px;
-  left: 50%;
+  top: 0;
+  left: 49%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-bottom: 16px solid #00ff99;
+  border-top: 16px solid #00ff99;
   z-index: 20;
 }
