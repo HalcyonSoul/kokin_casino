@@ -87,6 +87,10 @@ let isSpinning = false;
 /* =============================
    HELPERS
 ============================= */
+function clearHighlights() {
+  document.querySelectorAll(".highlight").forEach(h => h.remove());
+}
+
 function updateBalance(balance) {
   balanceEl.innerText = balance;
 }
@@ -126,6 +130,19 @@ function unlockSpin() {
   spinBtn.classList.remove("disabled");
 }
 
+function getSectorIndexByRoll(roll) {
+  const indexes = SECTORS
+    .map((s, i) => (s.value === roll && !s.disabled ? i : -1))
+    .filter(i => i !== -1);
+
+  if (!indexes.length) {
+    console.error("Нет сектора под roll:", roll);
+    return null;
+  }
+
+  return indexes[Math.floor(Math.random() * indexes.length)];
+}
+
 /* =============================
    LOGIN
 ============================= */
@@ -150,6 +167,7 @@ function spin() {
   if (isSpinning) return; // блокировка кнопки
   isSpinning = true;
   spinBtn.classList.add("disabled");
+  clearHighlights();
   resultEl.innerText = "";
 
   const balance = parseInt(balanceEl.innerText);
@@ -167,38 +185,26 @@ function spin() {
   })
   .then(r => r.json())
   .then(data => {
-    // Сброс колеса в 0
     wheel.style.transition = "none";
     wheel.style.setProperty('--angle', `0deg`);
 
-    // Вычисляем угол для выбранного сектора чтобы он оказался вверху
-    const indexes = SECTORS
-      .map((s, i) => s.value === data.roll && !s.disabled ? i : -1)
-      .filter(i => i !== -1);
-
-    if (!indexes.length) return;
-
-    const sectorIndex = indexes[Math.floor(Math.random() * indexes.length)];
-    const targetAngle = sectorIndex * SECTOR_ANGLE + SECTOR_ANGLE / 2; // центр сектора
+    const sectorIndex = getSectorIndexByRoll(data.roll);
+    if (sectorIndex === null) return;
+    const targetAngle = 360 - (sectorIndex * SECTOR_ANGLE + SECTOR_ANGLE / 2);
     const spins = 360 * (5 + Math.floor(Math.random() * 3));
     const finalAngle = spins + targetAngle;
 
-    // Небольшая задержка, чтобы браузер применил 0deg
     setTimeout(() => {
       wheel.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
       wheel.style.setProperty('--angle', `${finalAngle}deg`);
     }, 50);
 
-    // После окончания анимации (3 сек + запас) — обновляем баланс, подсвечиваем сектор и разблокируем кнопку
     setTimeout(() => {
-      // обновляем баланс и результат
       updateBalance(data.balance);
       showResult(data.win, data.roll);
 
-      // подсветка сектора вверху
       highlightSectorAtTop(sectorIndex);
 
-      // крупный выигрыш
       if (data.roll >= 1000) {
         const explosion = document.createElement('div');
         explosion.className = 'explosion';
@@ -209,9 +215,9 @@ function spin() {
         setTimeout(() => resultEl.classList.remove('big-win'), 1000);
       }
 
-      isSpinning = false; // разблокируем кнопку после всех эффектов
+      isSpinning = false;
       spinBtn.classList.remove("disabled");
-    }, 3100); // немного больше времени, чем transition
+    }, 3100);
   })
   .catch(err => {
     console.error("Spin error:", err);
@@ -222,9 +228,14 @@ function spin() {
 
 // Подсветка именно сектора который оказался вверху
 function highlightSectorAtTop(sectorIndex) {
-  const angle = sectorIndex * SECTOR_ANGLE + SECTOR_ANGLE / 2;
+  clearHighlights();
+
+  const angle =
+    360 - (sectorIndex * SECTOR_ANGLE + SECTOR_ANGLE / 2);
+
   const rad = angle * Math.PI / 180;
-  const radius = 120; // радиус колеса
+  const radius = 120;
+
   const x = 150 + radius * Math.cos(rad) - 30;
   const y = 150 + radius * Math.sin(rad) - 30;
 
@@ -232,9 +243,10 @@ function highlightSectorAtTop(sectorIndex) {
   highlight.className = 'highlight';
   highlight.style.left = `${x}px`;
   highlight.style.top = `${y}px`;
+
   wheel.appendChild(highlight);
 
-  setTimeout(() => highlight.remove(), 3000); // подсветка исчезает через 3 сек
+  setTimeout(() => highlight.remove(), 3000);
 }
 
 </script>
