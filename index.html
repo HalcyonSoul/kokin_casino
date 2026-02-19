@@ -56,7 +56,6 @@ const resultEl = document.getElementById("result");
 
 let spinning = false;
 let rotation = 0;
-let isFirstSpin = true;
 
 /* ===== LOGIN ===== */
 fetch(`${BASE_URL}/login`, {
@@ -66,21 +65,6 @@ fetch(`${BASE_URL}/login`, {
 })
 .then(r => r.json())
 .then(d => balanceEl.innerText = d.balance);
-
-/* ===== HELPERS ===== */
-function sectorIndexByRoll(roll) {
-  const list = SECTORS
-    .map((v,i) => v == roll ? i : -1)
-    .filter(i => i !== -1);
-  
-  if(list.length === 0) {
-    console.warn("Не найден сектор для roll:", roll);
-    // выбираем случайный сектор вместо ошибки
-    return Math.floor(Math.random() * SECTORS.length);
-  }
-
-  return list[Math.floor(Math.random() * list.length)];
-}
 
 /* ===== SPIN FUNCTION ===== */
 function logDebug(msg) {
