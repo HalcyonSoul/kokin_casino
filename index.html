@@ -90,7 +90,7 @@ btn.onclick = () => {
   .then(data => {
     const index = data.index;
 
-    const target = 180 + (index * SECTOR_ANGLE + SECTOR_ANGLE / 2);
+    const target = 360 - (index * SECTOR_ANGLE + SECTOR_ANGLE / 2);
     const spins = 360 * 5;
     const nextRotation = spins + target;
 
