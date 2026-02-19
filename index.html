@@ -11,7 +11,7 @@
 
 <body>
 <div class="app">
-
+  <div id="debugLog" style="color:#0f0; font-size:12px;"></div>
   <div class="card"> 
     <h2>🎰 Kokin Casino</h2>
     Balance: <b><span id="balance">0</span></b>
@@ -78,8 +78,13 @@ function sectorIndexByRoll(roll) {
 }
 
 /* ===== SPIN FUNCTION ===== */
+function logDebug(msg) {
+  const el = document.getElementById("debugLog");
+  el.innerText += msg + "\n";
+}
+
 function spinWheel(nextRotation) {
-  console.log("Текущий rotation перед сбросом:", rotation);
+  logDebug("Текущий rotation: " + rotation);
 
   // 1️⃣ Сбрасываем transition, ставим текущее положение
   wheel.style.transition = "none";
@@ -87,7 +92,7 @@ function spinWheel(nextRotation) {
 
   // 2️⃣ Малый таймаут для отрисовки сброса
   setTimeout(() => {
-    console.log("Старт анимации до rotation:", nextRotation);
+    logDebug("Старт анимации до rotation:", nextRotation);
 
     // 3️⃣ Включаем анимацию вращения
     wheel.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
