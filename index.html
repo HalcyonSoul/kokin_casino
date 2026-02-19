@@ -103,7 +103,7 @@ btn.onclick = () => {
   })
   .then(r => r.json())
   .then(data => {
-    const index = sectorIndexByRoll(data.roll);
+    const index = data.index;
 
     const target = index * SECTOR_ANGLE + SECTOR_ANGLE / 2;
     const spins = 360 * 5;
