@@ -117,14 +117,10 @@ body {
 }
 
 .wheel-wrapper {
-  --angle: 0deg;
-
   width: 300px;
   height: 300px;
   margin: 0 auto 12px;
-
   transform-origin: 50% 50%;
-  transform: rotate(var(--angle));
   transition: transform 3s cubic-bezier(.17,.67,.25,1);
   will-change: transform;
 }
