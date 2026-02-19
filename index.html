@@ -127,7 +127,7 @@ btn.onclick = () => {
     const index = sectorIndexByRoll(data.roll);
 
     const initialOffset = isFirstSpin ? SECTOR_ANGLE / 2 : 0;
-    const target = 360 - (index * SECTOR_ANGLE + initialOffset);
+    const target = index * SECTOR_ANGLE + initialOffset;
     const spins = 360 * (5 + Math.floor(Math.random() * 3));
     const nextRotation = rotation + spins + target;
 
