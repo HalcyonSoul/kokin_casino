@@ -79,20 +79,24 @@ function sectorIndexByRoll(roll) {
 
 /* ===== SPIN FUNCTION ===== */
 function spinWheel(nextRotation) {
-  // 1️⃣ Сбрасываем transition
-  wheel.style.transition = "none";
-  wheel.style.transform = 'rotate(180deg)'
-  wheel.style.transform = `rotate(${rotation}deg)`;
-  wheel.style.transform = 'rotate(180deg)'
+  console.log("Текущий rotation перед сбросом:", rotation);
 
-  // 2️⃣ Малый таймаут для рендеринга сброса
+  // 1️⃣ Сбрасываем transition, ставим текущее положение
+  wheel.style.transition = "none";
+  wheel.style.transform = `rotate(${rotation}deg)`;
+
+  // 2️⃣ Малый таймаут для отрисовки сброса
   setTimeout(() => {
+    console.log("Старт анимации до rotation:", nextRotation);
+
+    // 3️⃣ Включаем анимацию вращения
     wheel.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
     wheel.style.transform = `rotate(${nextRotation}deg)`;
-    rotation = nextRotation;
-  }, 20);
-}
 
+    // 4️⃣ Сохраняем новое положение
+    rotation = nextRotation;
+  }, 20); // 20ms достаточно для браузера, чтобы "увидеть" сброс
+}
 /* ===== SPIN BUTTON ===== */
 btn.onclick = () => {
   if (spinning) return;
