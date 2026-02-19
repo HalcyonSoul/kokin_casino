@@ -18,7 +18,7 @@
   </div>
 
   <div class="card game">
-    <div class="wheel-wrapper">
+    <div class="wheel-wrapper" id="wheelWrapper">
       <div class="pointer"></div>
       <img src="assets/slots.png" id="wheel">
     </div>
@@ -60,7 +60,7 @@ const SECTORS = [
 const SECTOR_ANGLE = 360 / SECTORS.length;
 
 /* ===== DOM ===== */
-const wheel = document.getElementById("wheel");
+const wheel = document.getElementById("wheelWrapper");
 const btn = document.getElementById("spinBtn");
 const balanceEl = document.getElementById("balance");
 const resultEl = document.getElementById("result");
