@@ -120,17 +120,20 @@ btn.onclick = () => {
       });
     });
 
-    
     setTimeout(() => {
-      
-      balanceEl.innerText = data.balance;
-      resultEl.innerText = data.win
-        ? `🎉 WIN ${data.roll}`
-        : `❌ LOSE ${data.roll}`;
+      wheel.style.transform = "rotate(180deg)";
+    }, 1000);
 
-      spinning = false;
-      btn.classList.remove("disabled");
-    }, 3200);
+ //   setTimeout(() => {
+//      
+//      balanceEl.innerText = data.balance;
+//      resultEl.innerText = data.win
+//        ? `🎉 WIN ${data.roll}`
+//        : `❌ LOSE ${data.roll}`;
+//
+//      spinning = false;
+//      btn.classList.remove("disabled");
+//    }, 3200)
   })
   .catch(() => {
     spinning = false;
