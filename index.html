@@ -41,9 +41,7 @@ const tg_id = tg.initDataUnsafe.user.id;
 const BASE_URL = "https://backend-kokin.onrender.com";
 const BET = 50;
 
-/* ===== СЕКТОРА (ПО КАРТИНКЕ, ПО ЧАСОВОЙ) =====
-   СТРЕЛКА СМОТРИТ ВВЕРХ
-*/
+/* ===== SECTORS =====*/
 const SECTORS = ["COCK IN", "ZERO", 67, "X2", "ZERO", "X3", "X2", "ZERO", "X10", "X3", "ZERO", "X2"];
 
 const SECTOR_ANGLE = 360 / SECTORS.length;
@@ -55,7 +53,6 @@ const balanceEl = document.getElementById("balance");
 const resultEl = document.getElementById("result");
 
 let spinning = false;
-let rotation = 0;
 
 /* ===== LOGIN ===== */
 fetch(`${BASE_URL}/login`, {
@@ -67,27 +64,15 @@ fetch(`${BASE_URL}/login`, {
 .then(d => balanceEl.innerText = d.balance);
 
 /* ===== SPIN FUNCTION ===== */
-function logDebug(msg) {
-  const el = document.getElementById("debugLog");
-  el.innerText += msg + "\n";
-}
-
 function spinWheel(nextRotation) {
-  logDebug("Текущий rotation: " + rotation);
-
-  // 1️⃣ Сбрасываем transition, ставим текущее положение
   wheel.style.transition = "none";
   wheel.style.transform = `rotate(${rotation}deg)`;
 
-  // 2️⃣ Малый таймаут для отрисовки сброса
   setTimeout(() => {
-    logDebug("Старт анимации до rotation:", nextRotation);
-
-    // 3️⃣ Включаем анимацию вращения
     wheel.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
     wheel.style.transform = `rotate(${nextRotation}deg)`;
 
-  }, 20); // 20ms достаточно для браузера, чтобы "увидеть" сброс
+  }, 20);
 }
 /* ===== SPIN BUTTON ===== */
 btn.onclick = () => {
@@ -105,14 +90,14 @@ btn.onclick = () => {
   .then(data => {
     const index = data.index;
 
-    const target = 360 - (index * SECTOR_ANGLE + SECTOR_ANGLE / 2);
+    const target = 360 - (index * SECTOR_ANGLE) + SECTOR_ANGLE / 2;
     const spins = 360 * 5;
     const nextRotation = spins + target;
 
     // Вращаем колесо
     spinWheel(nextRotation);
 
-    // Завершаем анимацию через 3.2 сек
+
     setTimeout(() => {
       balanceEl.innerText = data.balance;
       resultEl.innerText = data.win
