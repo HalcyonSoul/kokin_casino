@@ -21,7 +21,7 @@
     <div class="wheel-container">
       <div class="pointer"></div>
       <div class="wheel-wrapper" id="wheelWrapper">
-        <img src="assets/slots.png">
+        <img src="assets/slots.png" alt="wheel">
       </div>
     </div>
 
@@ -45,18 +45,8 @@ const BET = 50;
    СТРЕЛКА СМОТРИТ ВВЕРХ
 */
 const SECTORS = [
-  "ZERO",
-  "X2",
-  "COCK IN",
-  "ZERO",
-  67,
-  "X2",
-  "ZERO",
-  "X3",
-  "X2",
-  "ZERO",
-  "X10",
-  "X3"
+  "ZERO", "X2", "COCK IN", "ZERO", 67, "X2",
+  "ZERO", "X3", "X2", "ZERO", "X10", "X3"
 ];
 
 const SECTOR_ANGLE = 360 / SECTORS.length;
@@ -87,7 +77,21 @@ function sectorIndexByRoll(roll) {
   return list[Math.floor(Math.random() * list.length)];
 }
 
-/* ===== SPIN ===== */
+/* ===== SPIN FUNCTION ===== */
+function spinWheel(nextRotation) {
+  // 1️⃣ Сбрасываем transition
+  wheel.style.transition = "none";
+  wheel.style.transform = `rotate(${rotation}deg)`;
+
+  // 2️⃣ Малый таймаут для рендеринга сброса
+  setTimeout(() => {
+    wheel.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
+    wheel.style.transform = `rotate(${nextRotation}deg)`;
+    rotation = nextRotation;
+  }, 20);
+}
+
+/* ===== SPIN BUTTON ===== */
 btn.onclick = () => {
   if (spinning) return;
   spinning = true;
@@ -106,34 +110,18 @@ btn.onclick = () => {
     const spins = 360 * (5 + Math.floor(Math.random() * 3));
     const nextRotation = rotation + spins + target;
 
-    // 1️⃣ СБРОС БЕЗ АНИМАЦИИ
-    wheel.style.transition = "none";
-    wheel.style.transform = `rotate(${rotation}deg)`;
+    // Вращаем колесо
+    spinWheel(nextRotation);
 
-    // 2️⃣ ПЕРВЫЙ КАДР
-    requestAnimationFrame(() => {
-      // 3️⃣ ВТОРОЙ КАДР (КРИТИЧНО)
-      requestAnimationFrame(() => {
-        wheel.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
-        wheel.style.transform = `rotate(${nextRotation}deg)`;
-        rotation = nextRotation;
-      });
-    });
-
+    // Завершаем анимацию через 3.2 сек
     setTimeout(() => {
-      wheel.style.transform = "rotate(180deg)";
-    }, 1000);
-
- //   setTimeout(() => {
-//      
-//      balanceEl.innerText = data.balance;
-//      resultEl.innerText = data.win
-//        ? `🎉 WIN ${data.roll}`
-//        : `❌ LOSE ${data.roll}`;
-//
-//      spinning = false;
-//      btn.classList.remove("disabled");
-//    }, 3200)
+      balanceEl.innerText = data.balance;
+      resultEl.innerText = data.win
+        ? `🎉 WIN ${data.roll}`
+        : `❌ LOSE ${data.roll}`;
+      spinning = false;
+      btn.classList.remove("disabled");
+    }, 3200);
   })
   .catch(() => {
     spinning = false;
