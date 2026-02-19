@@ -106,8 +106,6 @@ function spinWheel(nextRotation) {
     wheel.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
     wheel.style.transform = `rotate(${nextRotation}deg)`;
 
-    // 4️⃣ Сохраняем новое положение
-    rotation = nextRotation;
   }, 20); // 20ms достаточно для браузера, чтобы "увидеть" сброс
 }
 /* ===== SPIN BUTTON ===== */
@@ -129,7 +127,7 @@ btn.onclick = () => {
     const initialOffset = isFirstSpin ? SECTOR_ANGLE / 2 : 0;
     const target = index * SECTOR_ANGLE + initialOffset;
     const spins = 360 * 5;
-    const nextRotation = rotation + spins + target;
+    const nextRotation = target;
 
     // Вращаем колесо
     spinWheel(nextRotation);
