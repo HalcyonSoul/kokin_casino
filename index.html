@@ -74,6 +74,13 @@ function sectorIndexByRoll(roll) {
   const list = SECTORS
     .map((v,i) => v == roll ? i : -1)
     .filter(i => i !== -1);
+  
+  if(list.length === 0) {
+    console.warn("Не найден сектор для roll:", roll);
+    // выбираем случайный сектор вместо ошибки
+    return Math.floor(Math.random() * SECTORS.length);
+  }
+
   return list[Math.floor(Math.random() * list.length)];
 }
 
