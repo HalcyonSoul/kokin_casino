@@ -81,7 +81,9 @@ function sectorIndexByRoll(roll) {
 function spinWheel(nextRotation) {
   // 1️⃣ Сбрасываем transition
   wheel.style.transition = "none";
+  wheel.style.transform = 'rotate(180deg)'
   wheel.style.transform = `rotate(${rotation}deg)`;
+  wheel.style.transform = 'rotate(180deg)'
 
   // 2️⃣ Малый таймаут для рендеринга сброса
   setTimeout(() => {
@@ -122,6 +124,7 @@ btn.onclick = () => {
       spinning = false;
       btn.classList.remove("disabled");
     }, 3200);
+    wheel.style.transform = 'rotate(180deg)'
   })
   .catch(() => {
     spinning = false;
