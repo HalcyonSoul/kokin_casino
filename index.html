@@ -128,7 +128,7 @@ btn.onclick = () => {
 
     const initialOffset = isFirstSpin ? SECTOR_ANGLE / 2 : 0;
     const target = index * SECTOR_ANGLE + initialOffset;
-    const spins = 360 * (5 + Math.floor(Math.random() * 3));
+    const spins = 360 * 5;
     const nextRotation = rotation + spins + target;
 
     // Вращаем колесо
