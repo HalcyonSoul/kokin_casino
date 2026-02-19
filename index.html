@@ -59,6 +59,7 @@ const resultEl = document.getElementById("result");
 
 let spinning = false;
 let rotation = 0;
+let isFirstSpin = true;
 
 /* ===== LOGIN ===== */
 fetch(`${BASE_URL}/login`, {
@@ -124,12 +125,15 @@ btn.onclick = () => {
   .then(r => r.json())
   .then(data => {
     const index = sectorIndexByRoll(data.roll);
-    const target = 360 - (index * SECTOR_ANGLE + SECTOR_ANGLE / 2);
+
+    const initialOffset = isFirstSpin ? SECTOR_ANGLE / 2 : 0;
+    const target = 360 - (index * SECTOR_ANGLE + initialOffset);
     const spins = 360 * (5 + Math.floor(Math.random() * 3));
     const nextRotation = rotation + spins + target;
 
     // Вращаем колесо
     spinWheel(nextRotation);
+    isFirstSpin = false;
 
     // Завершаем анимацию через 3.2 сек
     setTimeout(() => {
