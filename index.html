@@ -18,9 +18,11 @@
   </div>
 
   <div class="card game">
-    <div class="wheel-wrapper" id="wheelWrapper">
+    <div class="wheel-container">
       <div class="pointer"></div>
-      <img src="assets/slots.png" id="wheel">
+      <div class="wheel-wrapper" id="wheelWrapper">
+        <img src="assets/slots.png">
+      </div>
     </div>
 
     <div class="btn" id="spinBtn">КРУТАНИ</div>
@@ -102,12 +104,20 @@ btn.onclick = () => {
     const index = sectorIndexByRoll(data.roll);
 
     const target = 360 - (index * SECTOR_ANGLE + SECTOR_ANGLE / 2);
-
     const spins = 360 * (5 + Math.floor(Math.random() * 3));
-    rotation += spins + target;
+    const nextRotation = rotation + spins + target;
+
+    /* === TELEGRAM FIX === */
+    wheel.style.transition = "none";
+    wheel.style.transform = `rotate(${rotation}deg)`;
+
+    // 🔥 ПРИНУДИТЕЛЬНЫЙ REFLOW (КРИТИЧНО ДЛЯ TG)
+    wheel.offsetHeight;
 
     wheel.style.transition = "transform 3s cubic-bezier(.17,.67,.25,1)";
-    wheel.style.transform = `rotate(${rotation}deg)`;
+    wheel.style.transform = `rotate(${nextRotation}deg)`;
+
+    rotation = nextRotation;
 
     setTimeout(() => {
       balanceEl.innerText = data.balance;
