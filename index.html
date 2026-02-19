@@ -44,10 +44,7 @@ const BET = 50;
 /* ===== СЕКТОРА (ПО КАРТИНКЕ, ПО ЧАСОВОЙ) =====
    СТРЕЛКА СМОТРИТ ВВЕРХ
 */
-const SECTORS = [
-  "ZERO", "X2", "COCK IN", "ZERO", 67, "X2",
-  "ZERO", "X3", "X2", "ZERO", "X10", "X3"
-];
+const SECTORS = ["COCK IN", "ZERO", 67, "X2", "ZERO", "X3", "X2", "ZERO", "X10", "X3", "ZERO", "X2"];
 
 const SECTOR_ANGLE = 360 / SECTORS.length;
 
@@ -124,21 +121,19 @@ btn.onclick = () => {
   .then(data => {
     const index = sectorIndexByRoll(data.roll);
 
-    const initialOffset = isFirstSpin ? SECTOR_ANGLE / 2 : 0;
-    const target = index * SECTOR_ANGLE + initialOffset;
+    const target = index * SECTOR_ANGLE + SECTOR_ANGLE / 2;
     const spins = 360 * 5;
     const nextRotation = target;
 
     // Вращаем колесо
     spinWheel(nextRotation);
-    isFirstSpin = false;
 
     // Завершаем анимацию через 3.2 сек
     setTimeout(() => {
       balanceEl.innerText = data.balance;
       resultEl.innerText = data.win
         ? `🎉 WIN ${data.roll}`
-        : `❌ LOSE ${data.roll}`;
+        : `❌ LOOSE ${data.roll}`;
       spinning = false;
       btn.classList.remove("disabled");
     }, 3200);
