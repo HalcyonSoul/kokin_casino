@@ -104,6 +104,14 @@ body {
   user-select: none;
 }
 
+.tgk {
+  max-width: 100px;
+  background: linear-gradient(135deg,#2aabee,#229ed9);
+  text-align:center;
+  padding:10px;
+  border-radius:6px;
+}
+
 .btn:active {
   transform: scale(0.94);
   filter: brightness(1.2);
