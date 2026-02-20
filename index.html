@@ -28,6 +28,7 @@
     <div class="btn" id="spinBtn">КРУТАНИ</div>
     <div id="result"></div>
   </div>
+  <div class="tgk" id="tgBtn">ТГК</div>
 
 </div>
 
@@ -74,6 +75,13 @@ function spinWheel(nextRotation) {
 
   }, 20);
 }
+
+/* ===== TG BUTTON ===== */
+const tgBtn = document.getElementById("tgBtn");
+
+tgBtn.onclick = () => {
+  tg.openTelegramLink("https://t.me/+9l-IY-aGoVI3ZDhi");
+};
 /* ===== SPIN BUTTON ===== */
 btn.onclick = () => {
   if (spinning) return;
